@@ -46,6 +46,12 @@ d3.json(url).then(earthquakeData => {
       color = "#ffffff";
     }
 
+    //set time to date
+
+    const time = new Date(earthquake.properties.time)
+    const date = new Date(time); 
+    const dateStr = date.toString(); 
+      
 
     L.circle([earthquake.geometry.coordinates[1],earthquake.geometry.coordinates[0]], {
       fillOpacity: 0.75,
@@ -53,7 +59,9 @@ d3.json(url).then(earthquakeData => {
       stroke: false,
       fillColor: color,
       // Adjust radius
-      radius: earthquake.properties.mag * 10000
-    }).bindPopup("<h4>" + "Earthquake: " + earthquake.properties.place + "</h4><hr>").addTo(myMap);
+      radius: earthquake.properties.mag * 3000
+    }).bindPopup("<h4>" + "Earthquake: " + earthquake.properties.place + "</h4><hr>"+"<h4>" + 
+    "Time: " + dateStr + "</h4><hr>"+"<h4>" + "Magnitude: " + earthquake.properties.mag + "</h4><hr>"
+    + "<h4>" + "Significance: " + earthquake.properties.sig + "</h4>").addTo(myMap);
   })
 });
