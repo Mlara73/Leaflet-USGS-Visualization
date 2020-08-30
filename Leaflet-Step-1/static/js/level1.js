@@ -15,6 +15,26 @@ const darkmap = L.tileLayer("https://api.mapbox.com/styles/v1/mapbox/{id}/tiles/
   accessToken: API_KEY
 }).addTo(myMap);
 
+function getColor(significance){
+  
+  if (significance > 1000){
+    return "#842727"
+  }
+
+  if (significance > 750) {
+    return "#a85d57";
+  }
+  else if (significance > 500) {
+    return "#c8918b";
+  }
+  else if (significance > 250) {
+    return "#e5c7c4";
+  }
+  else {
+    return "#ffffff";
+  }
+};
+
 // Import and visualize data
 
 const url = "https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/1.0_month.geojson";
@@ -27,25 +47,6 @@ d3.json(url).then(earthquakeData => {
 
   earthquakeFeature.forEach(earthquake => {
 
-    let color;
-  
-    if (earthquake.properties.sig > 1000){
-      color = "#842727"
-    }
-
-    if (earthquake.properties.sig > 750) {
-      color = "#a85d57";
-    }
-    else if (earthquake.properties.sig > 500) {
-      color = "#c8918b";
-    }
-    else if (earthquake.properties.sig > 250) {
-      color = "#e5c7c4";
-    }
-    else {
-      color = "#ffffff";
-    }
-
     //set time to date
 
     const time = new Date(earthquake.properties.time)
@@ -57,11 +58,34 @@ d3.json(url).then(earthquakeData => {
       fillOpacity: 0.75,
       color: null,
       stroke: false,
-      fillColor: color,
+      fillColor: getColor(earthquake.properties.sig),
       // Adjust radius
       radius: earthquake.properties.mag * 3000
     }).bindPopup("<h4>" + "Earthquake: " + earthquake.properties.place + "</h4><hr>"+"<h4>" + 
     "Time: " + dateStr + "</h4><hr>"+"<h4>" + "Magnitude: " + earthquake.properties.mag + "</h4><hr>"
     + "<h4>" + "Significance: " + earthquake.properties.sig + "</h4>").addTo(myMap);
+
+
   })
+
+  // Set up the legend
+  var legend = L.control({position: 'bottomright'});
+
+  legend.onAdd = function (map) {
+  
+    var div = L.DomUtil.create('div', 'info legend'),
+      sigGrades = [0, 250, 500, 750, 1000],
+      labels = [];
+      div.innerHTML += "<h4 style='margin:4px'>EQ Significance</h4>"
+      // loop through our density intervals and generate a label with a colored square for each interval
+      for (var i = 0; i < sigGrades.length; i++) {
+        div.innerHTML +=
+            '<i style="background:' + getColor(sigGrades[i] + 1) + '"></i> ' +
+            sigGrades[i] + (sigGrades[i + 1] ? '&ndash;' + sigGrades[i + 1] + '<br>' : '+');
+      }
+  
+      return div;
+  };
+  
+  legend.addTo(myMap);
 });
