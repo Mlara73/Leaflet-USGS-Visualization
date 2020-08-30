@@ -76,12 +76,12 @@ d3.json(url).then(earthquakeData => {
     var div = L.DomUtil.create('div', 'info legend'),
       sigGrades = [0, 250, 500, 750, 1000],
       labels = [];
-      div.innerHTML += "<h4 style='margin:4px'>EQ Significance</h4>"
+      div.innerHTML += "<h4>EQ Significance</h4>"
       // loop through our density intervals and generate a label with a colored square for each interval
       for (var i = 0; i < sigGrades.length; i++) {
         div.innerHTML +=
-            '<i style="background:' + getColor(sigGrades[i] + 1) + '"></i> ' +
-            sigGrades[i] + (sigGrades[i + 1] ? '&ndash;' + sigGrades[i + 1] + '<br>' : '+');
+            '<i style="background:'+ getColor(sigGrades[i] + 1) + '"></i> ' +
+            sigGrades[i] + (sigGrades[i + 1] ? '&ndash;' + sigGrades[i + 1] + '<br><br>' : '+');
       }
   
       return div;
