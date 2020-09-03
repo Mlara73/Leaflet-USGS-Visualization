@@ -100,9 +100,9 @@ function createMarkers(earthquakeData, faultsInfo){
             // Adjust radius
             radius: markerSize(earthquake.properties.mag)
             })
-            // .bindPopup("<h4>" + "Earthquake: " + earthquake.properties.place + "</h4><hr>"+"<h4>" + 
-            // "Time: " + dateStr + "</h4><hr>"+"<h4>" + "Magnitude: " + earthquake.properties.mag + "</h4><hr>"
-            // + "<h4>" + "Significance: " + earthquake.properties.sig + "</h4>").addTo(myMap)
+            .bindPopup("<h4>" + "Earthquake: " + earthquake.properties.place + "</h4><hr>"+"<h4>" + 
+            "Time: " + dateStr + "</h4><hr>"+"<h4>" + "Magnitude: " + earthquake.properties.mag + "</h4><hr>"
+            + "<h4>" + "Significance: " + earthquake.properties.sig + "</h4>")
         );
   
     });
@@ -111,21 +111,54 @@ function createMarkers(earthquakeData, faultsInfo){
 
     const faultsFeature = faultsInfo.features;
     console.log(faultsFeature);
-    const faultMarkers = [];
+    const faultsArray = [];
 
     faultsFeature.forEach(fault => {
         // look for only fault-lines which have the following slip_rate values,Greater than 5.0 mm/yr and Between 1.0 and 5.0 mm/yr
         if(fault.properties.slip_rate === "Greater than 5.0 mm/yr"| fault.properties.slip_rate === "Between 1.0 and 5.0 mm/yr" ){
-            // console.log(fault)
-
-            faultMarkers.push(L.polyline(fault.geometry.coordinates, {
-                color: "green",
-                weight: 3,
-                stroke: true
-              }))
-            // console.log(faultMarkers)
+            faultsArray.push(fault);
+            
         }
     })
+
+    console.log(faultsArray);
+    
+    const faultsPoints = new L.LayerGroup();
+
+    function getStyle(weightVal){
+      let weight;
+  
+      switch (weightVal){
+          case 'Greater than 5.0 mm/yr':
+            weight = "5";
+            break;
+
+          default:
+            weight = "2";
+      }
+  
+      return {
+  
+          "color": "green",
+          "weight": weight,
+      
+      };
+  }
+  
+    
+    L.geoJson(faultsArray, 
+
+      {
+        color: "green",
+        style: feature => getStyle(feature.properties.slip_rate),
+
+        onEachFeature: function(feature, layer){
+          layer.bindPopup("<h4>" + "Fault: " + feature.properties.fault_name + "</h4><hr>"+"<h4>" + 
+          "Slip Rate: " + feature.properties.slip_rate + "</h4>")
+        }
+      }
+    ).addTo(faultsPoints)
+  
     
     // Set up the legend
     var legend = L.control({position: 'bottomright'});
@@ -151,7 +184,7 @@ function createMarkers(earthquakeData, faultsInfo){
     // Create an overlayMaps object to hold the earthquakePoints and faultsPoints layers
   
     const earthquakePoints = L.layerGroup(earthquakeMarkers);
-    const faultsPoints = L.layerGroup(faultMarkers);
+
 
     createMap(earthquakePoints,faultsPoints, legend);
 }
