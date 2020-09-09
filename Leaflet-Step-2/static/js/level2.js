@@ -1,4 +1,4 @@
-// Create the createMap function
+// CcreateMap function
 function createMap(earthquakePoints,faultsPoints, legend){
 
     // Create the tile layers
@@ -27,7 +27,7 @@ function createMap(earthquakePoints,faultsPoints, legend){
       Dark: darkmap
     };
   
-    // Create an overlayMaps object to hold the bikeStations layer
+    // Create an overlayMaps object to hold the earthquakes and faults layers
     
     const overlayMaps = {
       Earthquakes: earthquakePoints,
@@ -51,9 +51,9 @@ function createMap(earthquakePoints,faultsPoints, legend){
 
 // Function to define circles size
 function markerSize(mag) {
-    return 10**mag/2;
+    return 10**mag/3;
   }
-  
+// Function to define cirlces color based on significance
   function getColor(significance){
     
     if (significance > 1000){
@@ -75,7 +75,7 @@ function markerSize(mag) {
   };
 
 
-// Create the createMarkers function
+// createMarkers function
 function createMarkers(earthquakeData, faultsInfo){
     const earthquakeFeature = earthquakeData.features;
     console.log(earthquakeFeature);
@@ -91,7 +91,7 @@ function createMarkers(earthquakeData, faultsInfo){
         const date = new Date(time); 
         const dateStr = date.toString(); 
         
-  
+        // store circles data into earthquakesMarkers array
         earthquakeMarkers.push(L.circle([earthquake.geometry.coordinates[1],earthquake.geometry.coordinates[0]], {
             fillOpacity: 0.75,
             color: getColor(earthquake.properties.sig),
@@ -107,12 +107,17 @@ function createMarkers(earthquakeData, faultsInfo){
   
     });
 
-    //fault Markers
+    
+    // Create an overlayMaps object to hold the earthquakePoints 
+    const earthquakePoints = L.layerGroup(earthquakeMarkers);
+
+    ///fault Markers///
 
     const faultsFeature = faultsInfo.features;
     console.log(faultsFeature);
     const faultsArray = [];
 
+    // store faults filtered data into earthquakesMarkers array
     faultsFeature.forEach(fault => {
         // look for only fault-lines which have the following slip_rate values,Greater than 5.0 mm/yr and Between 1.0 and 5.0 mm/yr
         if(fault.properties.slip_rate === "Greater than 5.0 mm/yr"| fault.properties.slip_rate === "Between 1.0 and 5.0 mm/yr" ){
@@ -123,8 +128,10 @@ function createMarkers(earthquakeData, faultsInfo){
 
     console.log(faultsArray);
     
+    // Define a new layer group for faults
     const faultsPoints = new L.LayerGroup();
 
+    //Function to "L.geoJso" style property (fault-lines weight based on slip_rate, and color)
     function getStyle(weightVal){
       let weight;
   
@@ -145,7 +152,7 @@ function createMarkers(earthquakeData, faultsInfo){
       };
   }
   
-    
+    // use "L.geoJson" method to create fault-lines
     L.geoJson(faultsArray, 
 
       {
@@ -179,17 +186,11 @@ function createMarkers(earthquakeData, faultsInfo){
         return div;
     };
     
-    // legend.addTo(myMap);
-
-    // Create an overlayMaps object to hold the earthquakePoints and faultsPoints layers
-  
-    const earthquakePoints = L.layerGroup(earthquakeMarkers);
-
-
+    // call createMap function
     createMap(earthquakePoints,faultsPoints, legend);
 }
 
-
+// pull the data from api and geojson file
 const url = "https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/1.0_month.geojson";
 const geoData = "static/data/qfaults_latest_quaternary.geojson";
 d3.json(url).then( earthquakeData => {
